@@ -1,7 +1,7 @@
 const socket = io();
 
 if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition((position) =>{
+    navigator.geolocation.watchPosition((position) =>{
         const {latitude, longitude} = position.coords;
         socket.emit("send-location", {latitude, longitude});
     }, 
@@ -25,15 +25,16 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
 const markers = {};
 
 socket.on("receive-location", (data) => {
-    const{id, latitude, longitude} = data;
-    map.setView([latitude,longitude],10);
-    if(markers[id]){
+    const { id, latitude, longitude } = data;
+
+    if (markers[id]) {
         markers[id].setLatLng([latitude, longitude]);
-    }
-    else{
+    } else {
         markers[id] = L.marker([latitude, longitude]).addTo(map);
+        map.setView([latitude, longitude], 15); 
     }
-})
+});
+
 
 socket.on("user-disconnected", (id) =>{
     if(markers[id]){
